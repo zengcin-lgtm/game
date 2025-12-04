@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>太巴塱國小附幼 - 阿美族語快樂學</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f3f4f6;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e5e7eb' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        /* 阿美族紅 */
+        .text-amis-red { color: #E3002D; }
+        .bg-amis-red { background-color: #E3002D; }
+        .border-amis-red { border-color: #E3002D; }
+
+        /* 編織圖騰裝飾線 */
+        .weaving-pattern {
+            height: 24px;
+            width: 100%;
+            background-image: 
+                linear-gradient(135deg, #000000 25%, transparent 25%), 
+                linear-gradient(225deg, #000000 25%, transparent 25%), 
+                linear-gradient(45deg, #000000 25%, transparent 25%), 
+                linear-gradient(315deg, #000000 25%, transparent 25%);
+            background-position: 12px 0, 12px 0, 0 0, 0 0;
+            background-size: 24px 24px;
+            background-repeat: repeat-x;
+            background-color: #ffffff;
+            opacity: 0.9;
+        }
+
+        /* 課程卡片樣式 */
+        .course-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 4px solid transparent;
+        }
+        
+        .course-card:hover {
+            transform: translateY(-8px);
+            border-color: #E3002D;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .hero-section {
+            /* 這裡使用紅色系背景，你也可以換成太巴塱部落的風景照 */
+            background: linear-gradient(rgba(227, 0, 45, 0.9), rgba(185, 28, 28, 0.9)), url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- 頂部導覽列 -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 bg-amis-red rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-sm">
+                    T
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-xl font-bold text-gray-800 tracking-wide leading-tight">阿美語快樂學</span>
+                    <span class="text-sm text-gray-500 font-medium">太巴塱國小附幼</span>
+                </div>
+            </div>
+            <div class="hidden md:flex space-x-6 text-gray-600 font-medium items-center">
+                <a href="#" class="text-amis-red font-bold">首頁</a>
+                <a href="#" class="hover:text-amis-red transition">學習紀錄</a>
+                <a href="https://tafalong.at.tw" class="bg-red-50 text-amis-red px-4 py-1 rounded-full text-sm font-bold border border-red-100">幼兒園官網</a>
+            </div>
+            <!-- 手機版選單按鈕 -->
+            <button class="md:hidden text-gray-600 text-2xl">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+        <div class="weaving-pattern"></div>
+    </header>
+
+    <!-- 歡迎區塊 (Hero Section) -->
+    <div class="hero-section text-white py-16 px-4 text-center relative overflow-hidden">
+        <div class="relative z-10 max-w-3xl mx-auto">
+            <!-- 學校名稱標示 -->
+            <div class="inline-block bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-6 py-2 mb-6 animate-float">
+                <span class="text-yellow-300 font-bold tracking-wider text-lg shadow-black drop-shadow-md">
+                    <i class="fa-solid fa-school mr-2"></i>花蓮縣光復鄉太巴塱國民小學附設幼兒園
+                </span>
+            </div>
+
+            <h1 class="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">Nga'ay ho!!</h1>
+            <p class="text-xl md:text-2xl opacity-90 mb-8 font-light">歡迎來到太小附幼，讓我們一起快樂學阿美語。</p>
+            
+            <a href="#week-list" class="inline-block bg-yellow-400 text-gray-900 font-bold py-4 px-10 rounded-full shadow-xl hover:bg-yellow-300 transition transform hover:scale-105 border-b-4 border-yellow-600 active:border-b-0 active:translate-y-1">
+                開始上課囉 <i class="fa-solid fa-arrow-down ml-2"></i>
+            </a>
+        </div>
+        <!-- 裝飾背景圓圈 -->
+        <div class="absolute top-0 left-0 w-32 h-32 bg-white opacity-10 rounded-full -translate-x-10 -translate-y-10"></div>
+        <div class="absolute bottom-0 right-0 w-48 h-48 bg-white opacity-10 rounded-full translate-x-10 translate-y-10"></div>
+    </div>
+
+    <!-- 課程列表區 -->
+    <main id="week-list" class="flex-grow max-w-6xl mx-auto px-4 py-12 w-full">
+        
+        <div class="flex items-center mb-8">
+            <div class="h-8 w-2 bg-amis-red rounded-full mr-3"></div>
+            <h2 class="text-2xl font-bold text-gray-800">每週挑戰任務</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            <!-- 第一週卡片 -->
+            <a href="AmisGame.html" class="course-card bg-white rounded-2xl shadow-lg overflow-hidden group block cursor-pointer">
+                <div class="h-40 bg-gray-100 relative overflow-hidden">
+                    <div class="absolute inset-0 flex items-center justify-center text-amis-red opacity-10 group-hover:opacity-20 transition transform group-hover:scale-110">
+                        <i class="fa-solid fa-shapes text-9xl"></i>
+                    </div>
+                    <div class="absolute bottom-0 left-0 bg-amis-red text-white text-xs px-3 py-1 rounded-tr-lg font-bold shadow-sm">
+                        Week 14
+                    </div>
+                    <!-- 中央主圖示 -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2663/2663046.png" class="w-20 h-20 object-contain drop-shadow-md" alt="icon">
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl font-bold text-gray-800 group-hover:text-amis-red transition">O maan kinian?</h3>
+                        <span class="bg-green-100 text-green-600 text-xs font-bold px-2 py-1 rounded-full">開放中</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-4">這是什麼？<br>認識生活中常見的物品：帽子、衣服、桌子。</p>
+                    <div class="flex items-center text-amis-red font-bold text-sm group-hover:translate-x-2 transition">
+                        前往挑戰 <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 第二週卡片 -->
+            <a href="#" onclick="alert('第十五週課程準備中，敬請期待！')" class="course-card bg-white rounded-2xl shadow-lg overflow-hidden group block opacity-80 hover:opacity-100">
+                <div class="h-40 bg-gray-100 relative overflow-hidden">
+                    <div class="absolute inset-0 flex items-center justify-center text-blue-500 opacity-10 group-hover:opacity-20 transition transform group-hover:scale-110">
+                        <i class="fa-solid fa-users text-9xl"></i>
+                    </div>
+                    <div class="absolute bottom-0 left-0 bg-gray-500 text-white text-xs px-3 py-1 rounded-tr-lg">
+                        Week 15
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <i class="fa-solid fa-user-graduate text-6xl text-gray-400 group-hover:text-blue-500 transition"></i>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl font-bold text-gray-800">Cima kiso?</h3>
+                        <span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-1 rounded-full">準備中</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-4">你是誰？<br>學習自我介紹與家人的稱呼。</p>
+                    <div class="flex items-center text-gray-400 font-bold text-sm">
+                        即將推出 <i class="fa-solid fa-lock ml-2"></i>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 第三週卡片 -->
+            <div class="course-card bg-white rounded-2xl shadow-lg overflow-hidden block grayscale opacity-60">
+                <div class="h-40 bg-gray-100 relative overflow-hidden">
+                     <div class="absolute bottom-0 left-0 bg-gray-500 text-white text-xs px-3 py-1 rounded-tr-lg">
+                        Week 16
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <i class="fa-solid fa-arrow-down-1-9 text-6xl text-gray-400"></i>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl font-bold text-gray-800">Cecay, Tosa, Tolo</h3>
+                        <span class="bg-gray-100 text-gray-500 text-xs font-bold px-2 py-1 rounded-full">未解鎖</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-4">一、二、三<br>一起來數數看有多少個蘋果？</p>
+                    <div class="flex items-center text-gray-400 font-bold text-sm">
+                        敬請期待 <i class="fa-solid fa-lock ml-2"></i>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="bg-gray-800 text-gray-300 py-10 mt-8">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="mb-6 md:mb-0 text-center md:text-left">
+                <h4 class="text-white font-bold text-xl mb-2">花蓮縣光復鄉太巴塱國民小學附設幼兒園</h4>
+                <p class="text-sm opacity-80"><i class="fa-solid fa-location-dot mr-2"></i>花蓮縣光復鄉中正路二段23號</p>
+                <p class="text-sm opacity-80 mt-1">傳承文化，快樂學習</p>
+            </div>
+            <div class="flex space-x-6 text-2xl">
+                <!-- 這些連結可以之後換成學校實際的社群媒體連結 -->
+                <a href="https://www.facebook.com/pisimawan.tafalong" class="text-gray-400 hover:text-white transition transform hover:scale-110"><i class="fa-brands fa-facebook"></i></a>
+                <a href="https://tafalong.at.tw" class="text-gray-400 hover:text-white transition transform hover:scale-110"><i class="fa-solid fa-globe"></i></a>
+            </div>
+        </div>
+        <div class="border-t border-gray-700 mt-8 pt-6 text-center text-xs text-gray-500">
+            &copy; 2025-2026 Tafalong Elementary School Preschool. All rights reserved.
+        </div>
+    </footer>
+
+</body>
+</html>
