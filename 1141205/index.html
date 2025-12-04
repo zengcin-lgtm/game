@@ -52,10 +52,13 @@
 
         .btn-option {
             transition: all 0.3s ease;
-            cursor: pointer;
         }
         
-        .btn-option:active {
+        /* Phase 1 的卡片可以整體點擊 */
+        .btn-option-clickable {
+            cursor: pointer;
+        }
+        .btn-option-clickable:active {
             transform: scale(0.95);
         }
 
@@ -217,7 +220,7 @@
                     name: 'fodoy',
                     chinese: '衣服',
                     image: 'images/fodoy.jpg',
-                    audio_word: 'audio/fodoy.wav', // 單字讀音: "Fodoy"
+                    audio_word: 'audio/fodoy.mp3', // 單字讀音: "Fodoy"
                     audio_sentence: 'audio/sentence_fodoy.wav' // 回答句: "O fodoy kinian"
                 },
                 {
@@ -324,8 +327,6 @@
                         </button>
                         <p class="mt-4 text-gray-500 text-sm">點擊按鈕聽聲音，選出正確圖片</p>
                     `;
-                    // 自動播放題目音效 (為了瀏覽器政策，可能需要使用者互動後才能播放，這裡先嘗試)
-                    // setTimeout(() => this.playAudio(q.correctItem.audio_word), 500);
                 } else {
                     // 第二部分：顯示圖片 + 播放問題按鈕
                     qArea.innerHTML = `
@@ -336,8 +337,6 @@
                             <i class="fa-solid fa-ear-listen mr-2"></i> 聽問題 (O maan kinian?)
                         </button>
                     `;
-                    // 嘗試播放問句
-                    // setTimeout(() => this.playAudio(assets.common.question_audio), 500);
                 }
 
                 // 渲染選項區域
@@ -347,41 +346,60 @@
                 // 準備選項並洗牌
                 const options = this.shuffle([q.correctItem, q.distractor]);
 
-                options.forEach(opt => {
+                options.forEach((opt, index) => {
                     const isCorrect = (opt.id === q.correctItem.id);
                     const btn = document.createElement('div');
-                    btn.className = "btn-option bg-white border-4 border-gray-100 rounded-xl p-4 flex flex-col items-center justify-center shadow-sm hover:border-red-400 h-48 relative";
+                    // 基礎樣式
+                    btn.className = "btn-option bg-white border-4 border-gray-100 rounded-xl p-4 flex flex-col items-center justify-center shadow-sm h-48 relative transition-all";
                     
                     if (isPhase1) {
-                        // 選項是圖片
+                        // 第一部分：聽音選圖 (直接點擊卡片)
+                        btn.classList.add('btn-option-clickable', 'hover:border-red-400');
                         btn.innerHTML = `
-                            <img src="${opt.image}" class="w-full h-full object-contain" alt="${opt.chinese}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                            <div class="img-placeholder hidden absolute inset-0 m-4 text-2xl">${opt.chinese}</div>
+                            <img src="${opt.image}" class="w-full h-full object-contain pointer-events-none" alt="${opt.chinese}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                            <div class="img-placeholder hidden absolute inset-0 m-4 text-2xl pointer-events-none">${opt.chinese}</div>
                         `;
+                        
+                        // 第一階段直接點擊卡片
+                        btn.onclick = () => {
+                            this.playAudio(opt.audio_word);
+                            this.checkAnswer(isCorrect);
+                        };
                     } else {
-                        // 選項是聲音按鈕
+                        // 第二部分：看圖聽音 (需要試聽按鈕 和 選擇按鈕)
+                        // 卡片本身不是點擊觸發點，避免誤觸
                         btn.innerHTML = `
-                             <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 text-2xl mb-2">
-                                <i class="fa-solid fa-music"></i>
-                             </div>
-                             <span class="text-gray-500 font-bold">選項</span>
+                             <button class="mb-2 w-16 h-16 bg-yellow-400 hover:bg-yellow-500 rounded-full flex items-center justify-center text-white text-2xl shadow-md transition-transform active:scale-95 btn-listen-${index}">
+                                <i class="fa-solid fa-volume-high"></i>
+                             </button>
+                             <span class="text-xs text-gray-500 mb-2 font-bold">試聽</span>
+                             
+                             <button class="bg-red-600 hover:bg-red-700 text-white rounded-full px-6 py-2 font-bold shadow-md transition-transform active:scale-95 btn-select-${index}">
+                                <i class="fa-solid fa-check mr-1"></i> 選這個
+                             </button>
                         `;
-                        // 點擊選項時先播放該選項的聲音，稍微延遲後再判斷對錯 (或者是點擊直接判斷，這裡設計為點擊直接判斷同時播音)
                     }
 
-                    // 綁定點擊事件
-                    btn.onclick = () => {
-                        if (q.type === 2) {
-                            // 如果是第二階段，點擊先播放回答的句子
-                            this.playAudio(opt.audio_sentence);
-                        } else {
-                            // 第一階段點圖片，讀出該單字
-                            this.playAudio(opt.audio_word);
-                        }
-                        this.checkAnswer(isCorrect);
-                    };
-
                     optArea.appendChild(btn);
+
+                    // 為第二階段的內部按鈕綁定事件
+                    if (!isPhase1) {
+                        const listenBtn = btn.querySelector(`.btn-listen-${index}`);
+                        const selectBtn = btn.querySelector(`.btn-select-${index}`);
+
+                        // 試聽按鈕
+                        listenBtn.onclick = (e) => {
+                            e.stopPropagation(); // 阻止冒泡
+                            this.playAudio(opt.audio_sentence);
+                        };
+
+                        // 選擇按鈕
+                        selectBtn.onclick = (e) => {
+                            e.stopPropagation(); // 阻止冒泡
+                            // 這裡不播放聲音，直接判斷（或者也可以播放一次確認音，這裡先保持直接判斷）
+                            this.checkAnswer(isCorrect);
+                        };
+                    }
                 });
             }
 
@@ -463,11 +481,11 @@
 
                 // 根據分數給評語
                 if (this.score === 100) {
-                    feedbackText.innerText = "太厲害了！全部答對！ Fangcalay!";
+                    feedbackText.innerText = "太厲害了！全部答對！Fangcalay";
                 } else if (this.score >= 60) {
                     feedbackText.innerText = "做得很好！再接再厲！";
                 } else {
-                    feedbackText.innerText = "Saʼicelen！再試一次會更好！";
+                    feedbackText.innerText = "加油！Saʼicelen！再試一次會更好！";
                 }
             }
 
