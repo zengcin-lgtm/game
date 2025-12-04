@@ -178,9 +178,16 @@
                     <span id="final-score" class="text-5xl font-bold text-red-600 my-4 block">0</span>
                 </div>
                 <p id="feedback-text" class="text-gray-600">很棒喔！</p>
-                <button onclick="game.start()" class="bg-gray-800 hover:bg-gray-900 text-white text-lg font-bold py-3 px-8 rounded-full shadow-lg mt-4">
-                    再玩一次
-                </button>
+                
+                <div class="flex flex-col space-y-4 w-full max-w-xs mt-4">
+                    <button onclick="game.start()" class="bg-gray-800 hover:bg-gray-900 text-white text-lg font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95">
+                        再玩一次
+                    </button>
+                    <!-- 新增回首頁按鈕 -->
+                    <a href="index.html" class="bg-white border-2 border-gray-300 hover:border-red-500 text-gray-600 hover:text-red-600 text-lg font-bold py-3 px-8 rounded-full shadow-md text-center transform transition hover:scale-105 active:scale-95 flex items-center justify-center">
+                        <i class="fa-solid fa-house mr-2"></i>回首頁
+                    </a>
+                </div>
             </div>
 
         </div>
@@ -481,11 +488,11 @@
 
                 // 根據分數給評語
                 if (this.score === 100) {
-                    feedbackText.innerText = "太厲害了！全部答對！Fangcalay";
+                    feedbackText.innerText = "太厲害了！全部答對！Fangcalay!";
                 } else if (this.score >= 60) {
                     feedbackText.innerText = "做得很好！再接再厲！";
                 } else {
-                    feedbackText.innerText = "加油！Saʼicelen！再試一次會更好！";
+                    feedbackText.innerText = "加油！再試一次會更好！Saʼicelen";
                 }
             }
 
@@ -503,4 +510,3 @@
     </script>
 </body>
 </html>
-
