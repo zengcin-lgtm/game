@@ -122,7 +122,7 @@
                 <span class="bg-red-100 text-red-600 px-4 py-1 rounded-full">分數: <span id="score-display">0</span></span>
             </div>
 
-            <!-- 1. 登入畫面 (修正按鈕顯示問題) -->
+            <!-- 1. 登入畫面 -->
             <div id="screen-login" class="flex flex-col items-center justify-center flex-grow text-center space-y-6">
                 <div class="text-6xl text-red-600 mb-4">
                     <i class="fa-solid fa-shapes"></i>
@@ -133,7 +133,6 @@
                 <input type="text" id="student-name" placeholder="請輸入名字 (例如：陳小明)" 
                        class="border-2 border-gray-300 rounded-lg p-3 w-full max-w-xs text-center text-xl focus:border-red-500 outline-none mb-4">
                 
-                <!-- 修正後的按鈕：強制加上背景色樣式，確保不留白 -->
                 <button onclick="game.start()" 
                         style="background-color: #E3002D; color: white;"
                         class="text-white text-xl font-bold py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 border-2 border-transparent hover:border-red-800">
@@ -143,9 +142,7 @@
 
             <!-- 2. 遊戲進行畫面 (Phase 1 & 2) -->
             <div id="quiz-screen" class="hidden flex flex-col flex-grow w-full">
-                <!-- 題目區 -->
                 <div id="question-area" class="flex flex-col items-center justify-center mb-8"></div>
-                <!-- 選項區 -->
                 <div id="options-area" class="grid grid-cols-2 gap-4"></div>
             </div>
 
@@ -205,7 +202,7 @@
                     <button onclick="location.reload()" class="bg-gray-800 hover:bg-gray-900 text-white text-lg font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95">
                         再玩一次
                     </button>
-                    <a href="../index.html" class="bg-white border-2 border-gray-300 hover:border-red-500 text-gray-600 hover:text-red-600 text-lg font-bold py-3 px-8 rounded-full shadow-md text-center transform transition hover:scale-105 active:scale-95 flex items-center justify-center">
+                    <a href="index.html" class="bg-white border-2 border-gray-300 hover:border-red-500 text-gray-600 hover:text-red-600 text-lg font-bold py-3 px-8 rounded-full shadow-md text-center transform transition hover:scale-105 active:scale-95 flex items-center justify-center">
                         <i class="fa-solid fa-house mr-2"></i>回首頁
                     </a>
                 </div>
@@ -368,19 +365,44 @@
 
             toggleRecording() { if (this.isRecording) this.stopRecording(); else this.startRecording(); }
 
+            // 修正錄音：偵測正確格式並儲存資料
             startRecording() {
                 if(!this.stream) return;
                 this.audioChunks = [];
-                this.mediaRecorder = new MediaRecorder(this.stream);
-                this.mediaRecorder.ondataavailable = event => this.audioChunks.push(event.data);
+                
+                // 優先使用 webm, 其次 mp4, 最後讓瀏覽器預設
+                let options = {};
+                if (MediaRecorder.isTypeSupported('audio/webm')) {
+                    options = { mimeType: 'audio/webm' };
+                } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                    options = { mimeType: 'audio/mp4' };
+                }
+
+                try {
+                    this.mediaRecorder = new MediaRecorder(this.stream, options);
+                } catch (e) {
+                    console.warn("Recorder options failed, using default.");
+                    this.mediaRecorder = new MediaRecorder(this.stream);
+                }
+
+                this.mediaRecorder.ondataavailable = event => {
+                    if(event.data && event.data.size > 0) {
+                        this.audioChunks.push(event.data);
+                    }
+                };
+
                 this.mediaRecorder.onstop = () => {
-                    this.audioBlob = new Blob(this.audioChunks, { type: 'audio/mp3' });
+                    // 使用錄音器實際的 MIME type 建立 Blob
+                    const mimeType = this.mediaRecorder.mimeType || 'audio/webm';
+                    this.audioBlob = new Blob(this.audioChunks, { type: mimeType });
                     this.audioUrl = URL.createObjectURL(this.audioBlob);
+                    
                     document.getElementById('sp-controls').classList.remove('hidden');
                     document.getElementById('btn-retry').classList.remove('hidden');
                     document.getElementById('btn-record').classList.add('hidden');
                     document.getElementById('sp-status-text').innerText = "錄音完成！";
                 };
+                
                 this.mediaRecorder.start();
                 this.isRecording = true;
                 const btn = document.getElementById('btn-record');
@@ -410,14 +432,25 @@
 
             playRecording() { if (this.audioUrl) { const p = document.getElementById('audio-player'); p.src = this.audioUrl; p.play(); } }
 
+            // 修正上傳：根據格式給予正確副檔名
             uploadRecording() {
                 if (!this.audioBlob) return;
                 this.showScreen('screen-loading');
+                
+                // 判斷副檔名
+                let ext = 'webm';
+                if (this.audioBlob.type.includes('mp4') || this.audioBlob.type.includes('aac')) {
+                    ext = 'm4a';
+                } else if (this.audioBlob.type.includes('ogg')) {
+                    ext = 'ogg';
+                }
+
                 const reader = new FileReader();
                 reader.readAsDataURL(this.audioBlob);
                 reader.onloadend = () => {
                     const base64data = reader.result.split(',')[1];
-                    const fileName = `${this.studentName}_Q${this.currentQuestionIndex + 1}.mp3`;
+                    const fileName = `${this.studentName}_Q${this.currentQuestionIndex + 1}.${ext}`;
+                    
                     fetch(GOOGLE_SCRIPT_URL, {
                         method: 'POST', mode: 'no-cors',
                         headers: { 'Content-Type': 'application/json' },
@@ -453,9 +486,9 @@
                     else { currentDisplay++; }
                     finalScore.innerText = currentDisplay;
                 }, 20);
-                if (this.score === 100) feedbackText.innerText = "太厲害了！全部完成！Fangcalay!";
+                if (this.score === 100) feedbackText.innerText = "太厲害了！全部完成！ (Salikaka!)";
                 else if (this.score >= 60) feedbackText.innerText = "做得很好！再接再厲！";
-                else feedbackText.innerText = "加油！Saʼicelen!再試一次會更好！";
+                else feedbackText.innerText = "加油！再試一次會更好！";
             }
         }
         const game = new Game();
@@ -463,4 +496,3 @@
     </script>
 </body>
 </html>
-
