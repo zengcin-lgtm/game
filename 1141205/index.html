@@ -133,10 +133,12 @@
                 <input type="text" id="student-name" placeholder="請輸入名字 (例如：陳小明)" 
                        class="border-2 border-gray-300 rounded-lg p-3 w-full max-w-xs text-center text-xl focus:border-red-500 outline-none mb-4">
                 
+                <!-- 強制設定樣式，確保按鈕顯示 -->
                 <button onclick="game.start()" 
                         style="background-color: #E3002D; color: white;"
-                        class="text-white text-xl font-bold py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 border-2 border-transparent hover:border-red-800">
-                    開始遊戲
+                        class="text-white text-xl font-bold py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 border-2 border-transparent hover:border-red-800 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-play"></i>
+                    <span>開始遊戲</span>
                 </button>
             </div>
 
@@ -202,7 +204,8 @@
                     <button onclick="location.reload()" class="bg-gray-800 hover:bg-gray-900 text-white text-lg font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95">
                         再玩一次
                     </button>
-                    <a href="../index.html" class="bg-white border-2 border-gray-300 hover:border-red-500 text-gray-600 hover:text-red-600 text-lg font-bold py-3 px-8 rounded-full shadow-md text-center transform transition hover:scale-105 active:scale-95 flex items-center justify-center">
+                    <!-- 修正連結，確保連回 index.html -->
+                    <a href="index.html" class="bg-white border-2 border-gray-300 hover:border-red-500 text-gray-600 hover:text-red-600 text-lg font-bold py-3 px-8 rounded-full shadow-md text-center transform transition hover:scale-105 active:scale-95 flex items-center justify-center">
                         <i class="fa-solid fa-house mr-2"></i>回首頁
                     </a>
                 </div>
@@ -218,7 +221,7 @@
     <audio id="sfx-wrong" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3"></audio>
 
     <script>
-        // 設定區：填入 Google Apps Script 網址
+        // 設定區：請填入您的 Google Apps Script 網址
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNxCe65GHUdvHGcVKgKMz8G1Gy88GLkg2cIJKGzkUuWvKe-FXiMCDOcflqoK-PgwgnZg/exec"; 
 
         const assets = {
@@ -242,6 +245,7 @@
                 this.audioUrl = null;
                 this.isRecording = false;
                 this.stream = null;
+                this.recordingMimeType = 'audio/webm'; // 預設
             }
 
             start() {
@@ -365,21 +369,37 @@
 
             toggleRecording() { if (this.isRecording) this.stopRecording(); else this.startRecording(); }
 
-            // 修正錄音：偵測正確格式並儲存資料
+            // --- 核心修正：錄音啟動邏輯 ---
             startRecording() {
                 if(!this.stream) return;
                 this.audioChunks = [];
                 
-                // 優先使用 webm, 其次 mp4, 最後讓瀏覽器預設
-                let options = {};
-                if (MediaRecorder.isTypeSupported('audio/webm')) {
-                    options = { mimeType: 'audio/webm' };
-                } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
-                    options = { mimeType: 'audio/mp4' };
+                // 1. 偵測瀏覽器支援的格式
+                const types = [
+                    'audio/webm',
+                    'audio/mp4',
+                    'audio/ogg',
+                    'audio/webm;codecs=opus'
+                ];
+
+                // 2. 找到第一個支援的格式
+                let options = undefined;
+                for (const type of types) {
+                    if (MediaRecorder.isTypeSupported(type)) {
+                        this.recordingMimeType = type;
+                        options = { mimeType: type };
+                        break;
+                    }
                 }
 
                 try {
-                    this.mediaRecorder = new MediaRecorder(this.stream, options);
+                    // 3. 嘗試使用指定格式，若失敗則回退到預設
+                    if (options) {
+                        this.mediaRecorder = new MediaRecorder(this.stream, options);
+                    } else {
+                        this.mediaRecorder = new MediaRecorder(this.stream);
+                        this.recordingMimeType = 'audio/webm'; // 假設回退值
+                    }
                 } catch (e) {
                     console.warn("Recorder options failed, using default.");
                     this.mediaRecorder = new MediaRecorder(this.stream);
@@ -391,10 +411,12 @@
                     }
                 };
 
+                // --- 核心修正：停止錄音時建立正確的 Blob ---
                 this.mediaRecorder.onstop = () => {
-                    // 使用錄音器實際的 MIME type 建立 Blob
-                    const mimeType = this.mediaRecorder.mimeType || 'audio/webm';
-                    this.audioBlob = new Blob(this.audioChunks, { type: mimeType });
+                    // 使用當初決定的 mimeType 建立檔案
+                    // 注意：這裡如果用錯 type，試聽就會失敗
+                    const type = this.mediaRecorder.mimeType || this.recordingMimeType;
+                    this.audioBlob = new Blob(this.audioChunks, { type: type });
                     this.audioUrl = URL.createObjectURL(this.audioBlob);
                     
                     document.getElementById('sp-controls').classList.remove('hidden');
@@ -432,16 +454,18 @@
 
             playRecording() { if (this.audioUrl) { const p = document.getElementById('audio-player'); p.src = this.audioUrl; p.play(); } }
 
-            // 修正上傳：根據格式給予正確副檔名
+            // --- 核心修正：上傳時自動決定副檔名 ---
             uploadRecording() {
                 if (!this.audioBlob) return;
                 this.showScreen('screen-loading');
                 
-                // 判斷副檔名
-                let ext = 'webm';
-                if (this.audioBlob.type.includes('mp4') || this.audioBlob.type.includes('aac')) {
-                    ext = 'm4a';
-                } else if (this.audioBlob.type.includes('ogg')) {
+                // 根據 Blob 的 type 決定副檔名
+                let ext = 'webm'; // 預設為 webm (Chrome/Edge/Firefox)
+                const type = this.audioBlob.type;
+                
+                if (type.includes('mp4') || type.includes('aac')) {
+                    ext = 'm4a'; // iPhone/Safari 通常是這個
+                } else if (type.includes('ogg')) {
                     ext = 'ogg';
                 }
 
@@ -486,7 +510,7 @@
                     else { currentDisplay++; }
                     finalScore.innerText = currentDisplay;
                 }, 20);
-                if (this.score === 100) feedbackText.innerText = "太厲害了！全部完成！Fangcalay!!";
+                if (this.score === 100) feedbackText.innerText = "太厲害了！全部完成！Fangcalay!";
                 else if (this.score >= 60) feedbackText.innerText = "做得很好！再接再厲！";
                 else feedbackText.innerText = "加油！Saʼicelen!再試一次會更好！";
             }
@@ -496,4 +520,3 @@
     </script>
 </body>
 </html>
-
